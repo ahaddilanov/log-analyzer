@@ -29,8 +29,34 @@ def detect_sql_injection(log_lines):
 
     return flagged_lines
 
+def generate_report(log_lines):
+    report = []
+
+    brute_force_results = detect_failed_logins(log_lines)
+    for ip, count in brute_force_results.items():
+        if count >= 10:
+            risk = "High"
+        else:
+            risk = "Medium"
+        report.append({
+            "type": "Brute-force login attempt",
+            "detail": f"{ip} failed login {count} times",
+            "risk": risk
+        })
+
+    sql_results = detect_sql_injection(log_lines)
+    for line in sql_results:
+        report.append({
+            "type": "SQL Injection Attempt",
+            "detail": line,
+            "risk": "High"
+        })
+
+    return report
+
 log_lines = read_log("sample_log.txt")
-sql_injections = detect_sql_injection(log_lines)
-print("Possible SQL Injection attempts:")
-for line in sql_injections:
-    print(" -", line)
+report = generate_report(log_lines)
+
+print("=== Security Alert Report ===")
+for alert in report:
+    print(f"[{alert['risk']}] {alert['type']}: {alert['detail']}")
