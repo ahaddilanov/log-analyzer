@@ -1,3 +1,5 @@
+from fpdf import FPDF
+
 def read_log(filepath):
     with open(filepath, "r") as f:
         lines = f.readlines()
@@ -54,9 +56,23 @@ def generate_report(log_lines):
 
     return report
 
+def export_to_pdf(report, output_file="security_report.pdf"):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica","B",16)
+    pdf.cell(0,10,"Security Alert Report",ln=True,align="C")
+    pdf.ln(10)
+
+    pdf.set_font("Helvetica","",11)
+    for alert in report:
+        text = f"[{alert['risk']}] {alert['type']}: {alert['detail']}"
+        pdf.multi_cell(0,8,text)
+        pdf.ln(2)
+
+
+    pdf.output(output_file)
+    print(f"PDF report saved as {output_file}")
+
 log_lines = read_log("sample_log.txt")
 report = generate_report(log_lines)
-
-print("=== Security Alert Report ===")
-for alert in report:
-    print(f"[{alert['risk']}] {alert['type']}: {alert['detail']}")
+export_to_pdf(report)
