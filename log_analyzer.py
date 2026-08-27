@@ -18,6 +18,19 @@ def detect_failed_logins(log_lines, threshold=5):
 
     return suspicious_ips
 
+def detect_sql_injection(log_lines):
+    suspicious_patterns= ["' OR", "--",";","UNION SELECT","DROP TABLE","OR 1=1"]  #there are some other patterns too
+    flagged_lines = []
+    for line in log_lines:
+        for pattern in suspicious_patterns:
+            if pattern in line:
+                flagged_lines.append(line.strip())
+                break
+
+    return flagged_lines
+
 log_lines = read_log("sample_log.txt")
-suspicious = detect_failed_logins(log_lines)
-print("Suspicious IPs (brute-force):", suspicious)
+sql_injections = detect_sql_injection(log_lines)
+print("Possible SQL Injection attempts:")
+for line in sql_injections:
+    print(" -", line)
